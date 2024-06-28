@@ -1,0 +1,4 @@
+num2words
+Babel
+xlsxtpl
+jinja2

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Xlsx Report Generator</title>
+</head>
+
+<body>
+    <h2>Xlsx Report Generator</h2>
+    <p>The Xlsx Report Generator is a module that helps you create reports using only a .Xlsx template and Jinja syntax.
+    </p>
+
+    <p>This module inspired from <a href="https://apps.odoo.com/apps/modules/16.0/report_xlsx">Report Xlsx</a>.</p>
+
+    <h3>Prerequisites</h3>
+    <p>Before installing this module, make sure to install the following libraries:</p>
+    <ul>
+        <li><code>pip install xlsxtpl num2words Babel</code></li>
+    </ul>
+
+    <h3>Usage</h3>
+    <p>For usage instructions, you can refer to the following video: <a href="https://www.youtube.com/watch?v=dZvak8yiD5Q" target="_blank">Link</a></p>
+    <img src="assets/preview.gif" alt="Video Preview">
+	<p>Documentation on xlsxtpl syntax in the document: [Link]: <a href="https://pypi.org/project/xlsxtpl" target="_blank">https://pypi.org/project/xlsxtpl</a></p>
+    <h3>Field Naming Convention</h3>
+    <p>To call and write the field name, use the following format: <code>{{docs.field_name}}</code>, starting with the word "docs".</p>
+
+    <h4>Useful Functions (Indonesian Language as default)</h4>
+        <ul>
+        <li><code>{{spelled_out(docs.numeric_field)}}</code>: Spell out numbers</li>
+        <li><code>{{formatdate(docs.date_field)}}</code>: Format dates</li>
+        </ul>
+        <p>Note: The functions will be updated as needed.</p>
+        <p>lang default is lang='id_ID' change if need, example = <code>{{spelled_out(docs.numeric_field, lang='en_US')}}</code></p>
+    
+    <h3>Feedback</h3>
+    <p>We welcome any feedback and suggestions, especially for improving this module. Thank you!</p>
+
+</body>
+
+</html>
