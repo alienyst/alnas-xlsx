@@ -48,7 +48,7 @@
     <!-- ACTIONS (WINDOW) -->
 
     <record id="xlsx_report_action" model="ir.actions.act_window">
-        <field name="name">xlsx Report</field>
+        <field name="name">XLSX Report</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">xlsx.report.config</field>
         <field name="view_mode">tree,form</field>
