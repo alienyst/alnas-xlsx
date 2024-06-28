@@ -12,8 +12,9 @@ Before installing this module, make sure to install the following libraries:
 
 ## Usage
 
-For usage instructions, you can refer to the following video: [Link](https://www.youtube.com/watch?v=dZvak8yiD5Q)  
+For usage instructions, you can refer to the following video: [Link](https://youtu.be/-mpE5AaSJhw)  
 ![Video Preview](assets/preview.gif)
+
 
 Documentation on xlsxtpl syntax in the document: [Link](https://pypi.org/project/xlsxtpl/)
 Example Template: [Link](https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx)
