@@ -2,7 +2,6 @@ import base64
 from io import BytesIO
 import zipfile
 from xlsxtpl.writerx import BookWriter
-from html2text import HTML2Text
 from num2words import num2words
 from babel.dates import format_date
 
