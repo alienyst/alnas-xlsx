@@ -44,7 +44,6 @@ class IrActionsReport(models.Model):
 
         context = {
             "spelled_out": self._spelled_out,
-            "parsehtml": self._parse_html,
             "formatdate": self._formatdate,
             "company": self.env.company,
             "lang": self._context.get("lang", "id_ID"),
