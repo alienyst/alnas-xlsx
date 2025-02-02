@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="base.act_report_xml_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='report_type']" position="after">
-                <field name="report_xlsx_jinja_template" filename="report_xlsx_jinja_template_name" attrs="{'invisible': [('report_type', '!=', 'xlsx-jinja')]}"/>
+                <field name="report_xlsx_jinja_template" filename="report_xlsx_jinja_template_name" invisible="report_type != 'xlsx-jinja'"/>
                 <field name="report_xlsx_jinja_template_name" invisible="1"/>
             </xpath>
         </field>

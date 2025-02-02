@@ -16,7 +16,7 @@
 
     'category': 'Technical',
     
-    'version': '1.0',
+    'version': '17.0.0.0',
         
     'application': True,
     
@@ -26,9 +26,7 @@
 
     'data': [
         'security/ir.model.access.csv',
-        
         'views/xlsx_report_config_view.xml',
-        
         'views/ir_action_report_view.xml',
     ],
     
@@ -41,7 +39,7 @@
     'license': 'LGPL-3',
     
     'external_dependencies': {
-        'python': ['xlsxtpl', 'num2words', 'Babel'],
+        'python': ['xlsxtpl'],
     }
     
 }
