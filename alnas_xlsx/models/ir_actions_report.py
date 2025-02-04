@@ -15,8 +15,8 @@ class IrActionsReport(models.Model):
     _inherit = "ir.actions.report"
 
     report_type = fields.Selection(
-        selection_add=[("xlsx-jinja", "XLSX Jinja")],
-        ondelete={"xlsx-jinja": "cascade"},
+        selection_add=[("xlsx_jinja", "XLSX Jinja")],
+        ondelete={"xlsx_jinja": "cascade"},
     )
     
     report_xlsx_jinja_template = fields.Binary(string="Report XLSX Jinja Template")

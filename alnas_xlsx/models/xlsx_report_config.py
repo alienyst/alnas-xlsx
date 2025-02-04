@@ -46,7 +46,7 @@ class XlsxReportConfig(models.Model):
                     action_report = self.env['ir.actions.report'].sudo().create({
                         'name': record.name,
                         'model': record.model_id.model,
-                        'report_type': 'xlsx-jinja',
+                        'report_type': 'xlsx_jinja',
                         'report_xlsx_jinja_template': record.report_xlsx_template,
                         'report_xlsx_jinja_template_name': record.report_xlsx_template_filename,
                         'report_name': record.report_xlsx_template_filename,
@@ -88,13 +88,15 @@ class XlsxReportConfig(models.Model):
         self._action_unpublish()
         return self._refresh_page()
             
-    @api.ondelete(at_uninstall=False)
-    def _unlink_xlsx_report(self):
+    def unlink(self):
         for rec in self:
-            if rec.state == 'published':
+            if rec.state == "published":
                 rec.action_unpublish()
+
             if rec.action_report_id:
                 rec.action_report_id.unlink()
+
+        return super().unlink()
                 
     def _refresh_page(self):
         return {
