@@ -11,18 +11,17 @@ from odoo.http import (
 from odoo.tools import html_escape
 from odoo.tools.safe_eval import safe_eval, time
 
-from odoo.addons.web.controllers.report import ReportController
-
+from odoo.addons.web.controllers.main import ReportController
 
 
 class XlsxReportController(ReportController):
     @route()
     def report_routes(self, reportname, docids=None, converter=None, **data):
         if converter == "xlsx-jinja":
-            
+
             report = request.env["ir.actions.report"]._get_report_from_name(reportname)
             context = dict(request.env.context)
-            
+
             if docids:
                 docids = [int(i) for i in docids.split(",")]
             if data.get("options"):
@@ -30,18 +29,22 @@ class XlsxReportController(ReportController):
             if data.get("context"):
                 data["context"] = json.loads(data["context"])
                 context.update(data["context"])
-                
-            xlsx_files, file_type = report.with_context(**context)._render_jinja_xlsx(reportname, docids, data=data)
-            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            
+
+            xlsx_files, file_type = report.with_context(**context)._render_jinja_xlsx(
+                reportname, docids, data=data
+            )
+            content_type = (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
             if file_type == "zip":
                 content_type = "application/zip"
-                
+
             httpheaders = [
-                ('Content-Type', content_type),
+                ("Content-Type", content_type),
             ]
             return request.make_response(xlsx_files, headers=httpheaders)
-        
+
         return super().report_routes(reportname, docids, converter, **data)
 
     @route()
@@ -57,7 +60,10 @@ class XlsxReportController(ReportController):
                 if docids:
                     # Generic report:
                     response = self.report_routes(
-                        reportname, docids=docids, converter="xlsx-jinja", context=context
+                        reportname,
+                        docids=docids,
+                        converter="xlsx-jinja",
+                        context=context,
                     )
                 else:
                     # Particular report:
@@ -70,7 +76,11 @@ class XlsxReportController(ReportController):
                         )
                         context = json.dumps({**context, **data_context})
                     response = self.report_routes(
-                        reportname, docids=docids, converter="xlsx-jinja", context=context, **data
+                        reportname,
+                        docids=docids,
+                        converter="xlsx-jinja",
+                        context=context,
+                        **data
                     )
 
                 report = request.env["ir.actions.report"]._get_report_from_name(
@@ -78,7 +88,7 @@ class XlsxReportController(ReportController):
                 )
 
                 filename = "%s.%s" % (reportname, "zip")
-                
+
                 if docids:
                     ids = [int(x) for x in docids.split(",")]
                     obj = request.env[report.model].browse(ids)
