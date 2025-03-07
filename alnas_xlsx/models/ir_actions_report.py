@@ -10,7 +10,6 @@ from odoo.tools.safe_eval import safe_eval, time
 from odoo.exceptions import ValidationError
 
 
-
 class IrActionsReport(models.Model):
     _inherit = "ir.actions.report"
 
@@ -18,9 +17,11 @@ class IrActionsReport(models.Model):
         selection_add=[("xlsx-jinja", "XLSX Jinja")],
         ondelete={"xlsx-jinja": "cascade"},
     )
-    
+
     report_xlsx_jinja_template = fields.Binary(string="Report XLSX Jinja Template")
-    report_xlsx_jinja_template_name = fields.Char(string="Report XLSX Jinja Template Name")
+    report_xlsx_jinja_template_name = fields.Char(
+        string="Report XLSX Jinja Template Name"
+    )
 
     @api.constrains("report_type")
     def _check_report_type(self):
@@ -50,32 +51,37 @@ class IrActionsReport(models.Model):
             "sysdate": fields.Datetime.now(),
         }
 
-        return self._render_xlsx_jinja_mode(template, doc_obj, data, context, report_name=report.print_report_name)
-    
-    def _render_xlsx_jinja_mode(self, template_path, doc_obj, data, context, report_name="report"):
+        return self._render_xlsx_jinja_mode(
+            template, doc_obj, data, context, report_name=report.print_report_name
+        )
+
+    def _render_xlsx_jinja_mode(
+        self, template_path, doc_obj, data, context, report_name="report"
+    ):
         xlsx_files = []
         writer = BookWriter(template_path)
         writer.jinja_env.globals.update(dir=dir, getattr=getattr)
         zip_buffer = BytesIO()
-        
+
         for idx, obj in enumerate(doc_obj):
             context = {**context, "docs": obj, "data": data}
             idx = writer.get_tpl_idx(context)
             sheet_name = writer.get_sheet_name(context)
             writer.render_sheet(context, sheet_name, idx)
-            
+
             temp = BytesIO()
             writer.save(temp)
             temp.seek(0)
             xlsx_files.append(temp.read())
-
 
         if len(xlsx_files) == 1:
             return xlsx_files[0], "xlsx"
         else:
             with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
                 for idx, xlsx_file in enumerate(xlsx_files):
-                    name = safe_eval(report_name, {"object": doc_obj[idx], "time": time})
+                    name = safe_eval(
+                        report_name, {"object": doc_obj[idx], "time": time}
+                    )
                     filename = "%s.%s" % (name, "xlsx")
                     zip_file.writestr(filename, xlsx_file)
 
