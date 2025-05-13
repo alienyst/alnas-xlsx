@@ -94,8 +94,8 @@ class XlsxReportConfig(models.Model):
     def _action_publish(self):
         for record in self:
             if record.state == 'draft':
+                val = record._prepare_action_val()
                 if not record.action_report_id:
-                    val = record._prepare_action_val()
                     action_report = self.env['ir.actions.report'].sudo().create(val)
                 else:
                     action_report = record.action_report_id
