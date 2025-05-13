@@ -47,7 +47,7 @@ class IrActionsReport(models.Model):
             "formatdate": self._formatdate,
             "company": self.env.company,
             "lang": self._context.get("lang", "id_ID"),
-            "sysdate": fields.Datetime.now(),
+            "sysdate": fields.Datetime.now()
         }
 
         return self._render_xlsx_jinja_mode(template, doc_obj, data, context, report_name=report.print_report_name)
@@ -55,15 +55,12 @@ class IrActionsReport(models.Model):
     def _render_xlsx_jinja_mode(self, template_path, doc_obj, data, context, report_name="report"):
         xlsx_files = []
         writer = BookWriter(template_path)
-        writer.jinja_env.globals.update(dir=dir, getattr=getattr)
+        writer.set_jinja_globals(dir=dir, getattr=getattr)
         zip_buffer = BytesIO()
         
         for idx, obj in enumerate(doc_obj):
             context = {**context, "docs": obj, "data": data}
-            idx = writer.get_tpl_idx(context)
-            sheet_name = writer.get_sheet_name(context)
-            writer.render_sheet(context, sheet_name, idx)
-            
+            writer.render_sheet(context)
             temp = BytesIO()
             writer.save(temp)
             temp.seek(0)
@@ -84,9 +81,10 @@ class IrActionsReport(models.Model):
 
     # Render Function
     @staticmethod
-    def _formatdate(date_required=fields.Datetime.today(), format="full", lang="id_ID"):
-        return format_date(date_required, format=format, locale=lang)
+    def _formatdate(date_required=fields.Datetime.today(), format="full", lang="id_ID", **kwargs):
+        return format_date(date=date_required, format=format, locale=lang, **kwargs)
 
     @staticmethod
-    def _spelled_out(number, lang="id_ID"):
-        return num2words(number, lang=lang)
+    def _spelled_out(number, lang="id_ID", **kwargs):
+        return num2words(number=number, lang=lang, **kwargs)
+        
