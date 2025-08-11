@@ -1,13 +1,13 @@
 import base64
-from io import BytesIO
 import zipfile
-from xlsxtpl.writerx import BookWriter
-from num2words import num2words
-from babel.dates import format_date
+from io import BytesIO
 
+from xlsxtpl.writerx import BookWriter
 from odoo import _, api, fields, models
 from odoo.tools.safe_eval import safe_eval, time
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, MissingError
+
+from ..tools import misc as misc_tools
 
 
 
@@ -31,25 +31,28 @@ class IrActionsReport(models.Model):
                 and not rec.report_xlsx_jinja_template_name.endswith(".xlsx")
             ):
                 raise ValidationError(_("Please upload an XLSX Jinja template."))
+            
+    def _get_rendering_context_xlsxtpl(self):
+        context = {
+            "spelled_out": misc_tools.spelled_out,
+            "formatdate": misc_tools.formatdate,
+            "convert_currency": misc_tools.convert_currency,
+            "company": self.env.company,
+            "lang": self._context.get("lang", "id_ID"),
+            "sysdate": fields.Datetime.now()
+        }
+        return context
 
     def _render_jinja_xlsx(self, report_ref, docids, data):
         report = self._get_report_from_name(report_ref)
         file_template = report.report_xlsx_jinja_template
 
         if not file_template:
-            raise ValueError("No XLSX Jinja template found.")
+            raise MissingError("No XLSX Jinja template found.")
 
         template = BytesIO(base64.b64decode(file_template))
         doc_obj = self.env[report.model].browse(docids)
-
-        context = {
-            "spelled_out": self._spelled_out,
-            "formatdate": self._formatdate,
-            "company": self.env.company,
-            "lang": self._context.get("lang", "id_ID"),
-            "sysdate": fields.Datetime.now()
-        }
-
+        context = self._get_rendering_context_xlsxtpl()
         return self._render_xlsx_jinja_mode(template, doc_obj, data, context, report_name=report.print_report_name)
     
     def _render_xlsx_jinja_mode(self, template_path, doc_obj, data, context, report_name="report"):
@@ -66,7 +69,6 @@ class IrActionsReport(models.Model):
             temp.seek(0)
             xlsx_files.append(temp.read())
 
-
         if len(xlsx_files) == 1:
             return xlsx_files[0], "xlsx"
         else:
@@ -78,13 +80,3 @@ class IrActionsReport(models.Model):
 
             zip_buffer.seek(0)
             return zip_buffer.read(), "zip"
-
-    # Render Function
-    @staticmethod
-    def _formatdate(date_required=fields.Datetime.today(), format="full", lang="id_ID", **kwargs):
-        return format_date(date=date_required, format=format, locale=lang, **kwargs)
-
-    @staticmethod
-    def _spelled_out(number, lang="id_ID", **kwargs):
-        return num2words(number=number, lang=lang, **kwargs)
-        
