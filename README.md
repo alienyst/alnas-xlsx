@@ -27,6 +27,7 @@ To call and write the field name, use the following format: `{{docs.field_name}}
 
 - `{{spelled_out(docs.numeric_field)}}`: Spell out numbers
 - `{{formatdate(docs.date_field)}}`: Format dates
+- `{{convert_currency(docs.monetary_field, docs.currency_id)}}`: Format monetary field
 
 Note: The functions will be updated as needed.
 
