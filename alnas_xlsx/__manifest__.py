@@ -12,7 +12,7 @@
     'website': "https://github.com/alienyst",
     'images': ["static/description/banner.png"],
     'category': 'Technical',
-    'version': '1.0',
+    'version': '1.1',
     'application': True,
     'installable': True,
 
