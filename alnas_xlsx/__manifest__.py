@@ -30,7 +30,7 @@
 
     'license': 'LGPL-3',    
     'external_dependencies': {
-        'python': ['xlsxtpl'],
+        'python': ['xlsxtpl']
     }
     
 }
