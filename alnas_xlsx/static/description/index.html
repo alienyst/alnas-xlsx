@@ -18,6 +18,11 @@
     <ul>
         <li><code>pip install xlsxtpl</code></li>
     </ul>
+    <p>Note: If you want to use replace image, please install webp.</p>
+    <ul>
+        <li><code>sudo apt install webp</code></li>
+    </ul>
+
 
     <h3>Usage</h3>
     <p>For usage instructions, you can refer to the following video: <a href="https://youtu.be/-mpE5AaSJhw" target="_blank">Link</a></p>
@@ -26,6 +31,7 @@
     <p>Documentation on xlsxtpl syntax in the document: <a href="https://pypi.org/project/xlsxtpl" target="_blank">https://pypi.org/project/xlsxtpl</a></p>
     <br>
     <p>You can see example template for sale order here : <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx" target="_blank">https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx</a></p>
+    <p>You can see example template for sale order here : <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture.xlsx" target="_blank">Example with Image</a></p>
     <br>
 
     <h3>Field Naming Convention</h3>
@@ -36,6 +42,8 @@
         <li><code>{{spelled_out(docs.numeric_field)}}</code>: Spell out numbers</li>
         <li><code>{{formatdate(docs.date_field)}}</code>: Format dates</li>
         <li><code>{{convert_currency(docs.monetary_field, docs.currency_id)}}</code>: Format monetary field</li>
+        <li><code>{% img docs.image_field %}</code>: Replace dummy image with image field, *require dummy image in template</li>
+        <li><img src="assets/replace_image.png" alt="replace image syntax"></li>
         </ul>
         <p>Note: The functions will be updated as needed.</p>
         <p>lang default is lang='id_ID' change if need, example = <code>{{spelled_out(docs.numeric_field, lang='en_US')}}</code></p>
