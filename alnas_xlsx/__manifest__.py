@@ -16,7 +16,7 @@
 
     'category': 'Technical',
     
-    'version': '18.0.0.1',
+    'version': '19.0.0.1',
         
     'application': True,
     

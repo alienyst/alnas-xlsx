@@ -38,7 +38,7 @@ class IrActionsReport(models.Model):
             "formatdate": misc_tools.formatdate,
             "convert_currency": misc_tools.convert_currency,
             "company": self.env.company,
-            "lang": self._context.get("lang", "id_ID"),
+            "lang": self.env.context.get("lang", "id_ID"),
             "sysdate": fields.Datetime.now()
         }
         return context
