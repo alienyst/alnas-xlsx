@@ -164,6 +164,6 @@ def _patched_image(self, tag_name, arg_list, kw_dict, caller):
 
     return _orig_image_handler(self, image, image_index, caller)
 
-ImagexExtension.tags = {'img', 'insert_img'}
+ImagexExtension.tags = {'img', 'insert_img', 'insert_img_cell'}
 ImagexExtension.parse = _patched_parse
 ImagexExtension._image = _patched_image
