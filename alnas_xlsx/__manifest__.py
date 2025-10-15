@@ -6,7 +6,7 @@
     'website': "https://github.com/alienyst",
     'images': ["static/description/banner.png"],
     'category': 'Technical',
-    'version': '18.0.0.3',
+    'version': '18.0.0.4',
     'application': True,
     'installable': True,
     'depends': ['base', 'mail'],
