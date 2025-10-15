@@ -1,56 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Xlsx Report Generator</title>
-</head>
-
-<body>
-    <h2>Xlsx Report Generator</h2>
-    <p>The Xlsx Report Generator is a module that helps you create reports using only a .Xlsx template and Jinja syntax.
-    </p>
-
-    <p>This module inspired from <a href="https://apps.odoo.com/apps/modules/16.0/report_xlsx">Report Xlsx</a>.</p>
-
-    <h3>Prerequisites</h3>
-    <p>Before installing this module, make sure to install the following libraries:</p>
-    <ul>
-        <li><code>pip install xlsxtpl</code></li>
-    </ul>
-    <p>Note: If you want to use replace image, please install webp.</p>
-    <ul>
-        <li><code>sudo apt install webp</code></li>
-    </ul>
-
-
-    <h3>Usage</h3>
-    <p>For usage instructions, you can refer to the following video: <a href="https://youtu.be/-mpE5AaSJhw" target="_blank">Link</a></p>
-    <img src="assets/preview.gif" alt="Video Preview">
-	<br>
-    <p>Documentation on xlsxtpl syntax in the document: <a href="https://pypi.org/project/xlsxtpl" target="_blank">https://pypi.org/project/xlsxtpl</a></p>
-    <br>
-    <p>You can see example template for sale order here : <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx" target="_blank">https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx</a></p>
-    <p>You can see example template for sale order here : <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture.xlsx" target="_blank">Example with Image</a></p>
-    <br>
-
-    <h3>Field Naming Convention</h3>
-    <p>To call and write the field name, use the following format: <code>{{docs.field_name}}</code>, starting with the word "docs".</p>
-
-    <h4>Useful Functions (Indonesian Language as default)</h4>
-        <ul>
-        <li><code>{{spelled_out(docs.numeric_field)}}</code>: Spell out numbers</li>
-        <li><code>{{formatdate(docs.date_field)}}</code>: Format dates</li>
-        <li><code>{{convert_currency(docs.monetary_field, docs.currency_id)}}</code>: Format monetary field</li>
-        <li><code>{% img docs.image_field %}</code>: Replace dummy image with image field, *require dummy image in template</li>
-        <li><img src="assets/replace_image.png" alt="replace image syntax"></li>
-        </ul>
-        <p>Note: The functions will be updated as needed.</p>
-        <p>lang default is lang='id_ID' change if need, example = <code>{{spelled_out(docs.numeric_field, lang='en_US')}}</code></p>
-    
-    <h3>Feedback</h3>
-    <p>We welcome any feedback and suggestions, especially for improving this module. Thank you!</p>
-
-</body>
-
-</html>
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <h2 class="oe_slogan">XLSX Report Generator</h2>
+        <h3 class="oe_slogan">Helps you create reports using only a .Xlsx template and Jinja syntax.</h3>
+        <div class="oe_span12">
+            <img src="assets/preview.gif" alt="Video Preview">                            
+        </div>
+        <p>This module inspired from <a href="https://apps.odoo.com/apps/modules/16.0/report_xlsx">Report Xlsx</a>.</p>
+    </div>
+</section>
+<section class="oe_container ">
+    <div class="oe_row">
+        <div class="oe_quote">
+            <h2>Prerequisites</h2>
+            <p>Before installing this module, make sure to install the following libraries:</p>
+            <ul>
+                <li><code>pip install xlsxtpl</code></li>
+            </ul>
+            <p>Note: If you want to use replace or insert webp image, please install webp.</p>
+            <ul>
+                <li><code>sudo apt install webp</code></li>
+            </ul>
+        </div>
+        
+    </div>
+</section>
+<section class="oe_container ">
+    <div class="oe_row">
+        <div class="oe_quote">
+            <h2>Installation</h2>
+            <p>To install this module:</p>
+            <ol>
+                <li>Download the module and place it in Odoo <strong>Custom Addons</strong> folder.</li>
+                <li>Restart Odoo Server</li>
+                <li>Go to Odoo UI and Enable <strong>Debug Mode</strong> then open the <strong>Apps</strong> menu.</li>
+                <li>Refresh the list by clicking <strong>Update Apps List</strong>. Finally, you will see <strong>Xlsx Report Generator</strong> module and click the <strong>Install</strong> button.</li>
+            </ol>
+        </div>
+        
+    </div>
+</section>
+<section class="oe_container ">
+    <div class="oe_row">
+        <div class="oe_quote">
+            <h2>Usage</h2>
+            <p>For usage instructions, you can refer to the following video: <a href="https://youtu.be/-mpE5AaSJhw" target="_blank">Link</a></p>
+            <p>For example template</p>
+            <img src="assets/template.png" alt="Template Preview" class="oe_picture oe_screenshot">
+            <ol>
+                <li>Sale Order: <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx" target="_blank">https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example.xlsx</a></li>
+                <li>Sale Order with Image Replace: <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture.xlsx" target="_blank">https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture.xlsx</a></li>
+                <li>Sale Order with Insert Image: <a href="https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture_insert.xlsx" target="_blank">https://github.com/alienyst/alnas-xlsx/raw/16.0/alnas_xlsx/static/description/example/example_with_picture_insert.xlsx</a></li>
+            </ol>
+        </div>
+    </div>
+</section>
+<section class="oe_container ">
+    <div class="oe_row">
+        <div class="oe_quote">
+            <h2>Field Naming Convention</h2>
+            <p>To call and write the field name, use the following format: <code>{{docs.field_name}}</code>, starting with the word "docs".</p>
+            <h4>Useful Functions (Indonesian Language as default)</h4>
+            <ul>
+                <li><code>{{spelled_out(docs.numeric_field)}}</code>: Spell out numbers</li>
+                <li><code>{{formatdate(docs.date_field)}}</code>: Format dates</li>
+                <li><code>{{convert_currency(docs.monetary_field, docs.currency_id)}}</code>: Format monetary field</li>
+                <li><code>{% insert_img docs.image_field %}</code>: Insert image in cell</li>
+                <li><code>{% img docs.image_field %}</code>: Replace dummy image with image field, *require dummy image in template</li>
+                <li><img src="assets/replace_image.png" alt="replace image syntax"></li>
+            </ul>
+            <lang>Note: The functions will be updated as needed. <br/> lang default is lang='id_ID' change if need, example = <code>{{spelled_out(docs.numeric_field, lang='en_US')}}</code></p>
+        </div>
+    </div>
+</section>
+<section class="oe_container ">
+    <div class="oe_row">
+        <div class="oe_quote">
+        <h2>Notes</h2>
+            <p>We welcome any feedback and suggestions, especially for improving this module. Thank you!</p>
+        </div>
+    </div>
+</section>
