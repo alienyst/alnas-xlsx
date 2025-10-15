@@ -1,6 +1,7 @@
 import base64
 import zipfile
 from io import BytesIO
+from datetime import datetime
 
 from xlsxtpl.writerx import BookWriter
 from odoo import _, api, fields, models
@@ -8,7 +9,6 @@ from odoo.tools.safe_eval import safe_eval, time
 from odoo.exceptions import ValidationError, MissingError
 
 from ..tools import misc as misc_tools
-
 
 
 class IrActionsReport(models.Model):
@@ -48,7 +48,7 @@ class IrActionsReport(models.Model):
         file_template = report.report_xlsx_jinja_template
 
         if not file_template:
-            raise MissingError("No XLSX Jinja template found.")
+            raise MissingError(_("No XLSX Jinja template found."))
 
         template = BytesIO(base64.b64decode(file_template))
         doc_obj = self.env[report.model].browse(docids)
@@ -59,11 +59,27 @@ class IrActionsReport(models.Model):
         xlsx_files = []
         writer = BookWriter(template_path)
         writer.set_jinja_globals(dir=dir, getattr=getattr)
+        try:
+            writer.workbook.properties.modified = datetime.utcnow().replace(microsecond=0)
+            writer.workbook.properties.lastModifiedBy = (self.env.user.name or "").strip()
+        except Exception:
+            pass
         zip_buffer = BytesIO()
+        sheet_states = writer.sheet_resource_map.sheet_state_list
+        if not sheet_states:
+            raise MissingError(_("The XLSX template does not contain any worksheet."))
         
         for idx, obj in enumerate(doc_obj):
-            context = {**context, "docs": obj, "data": data}
-            writer.render_sheet(context)
+            for sheet_state in sheet_states:
+                payload = {
+                    **context,
+                    "docs": obj,
+                    "data": data,
+                    "sheet_name": sheet_state.name,
+                    "tpl_idx": sheet_state.index,
+                }
+                writer.render_sheet(payload)
+
             temp = BytesIO()
             writer.save(temp)
             temp.seek(0)
