@@ -1,20 +1,15 @@
-import os
-import six
 import logging
-import subprocess
-import tempfile
 from io import BytesIO
 from base64 import b64decode
 
-from PIL import Image as PILImage, ImageFile
+from PIL import Image as PILImage, WebPImagePlugin #to handle webp
 from jinja2 import nodes
 
-from odoo.tools.mimetypes import guess_mimetype
 from xltpl.xlext import ImageRef, ImagexExtension, pil
 
 
 _logger = logging.getLogger(__name__)
-
+_origin_init = ImageRef.__init__
 
 def _patched_image_ref_init(
     self,
@@ -25,12 +20,7 @@ def _patched_image_ref_init(
     desired_width=0,
     desired_height=0,
 ):
-    self.image = image
-    self.image_index = image_index
-    self.rdrowx = -1
-    self.rdcolx = -1
-    self.wtrowx = -1
-    self.wtcolx = -1
+    _origin_init(self, image, image_index)
     self.allow_insert = allow_insert
     self.resize_mode = resize_mode
     self.desired_width = desired_width
@@ -38,33 +28,19 @@ def _patched_image_ref_init(
 
     if isinstance(image, bytes):
         try:
-            imageb64 = b64decode(image)
-            if imageb64 and guess_mimetype(imageb64, "") == "image/webp":
-                with tempfile.NamedTemporaryFile(
-                    delete=False, suffix=".webp"
-                ) as tmp_webp:
-                    tmp_webp.write(imageb64)
-                    webp_path = tmp_webp.name
-                png_path = webp_path.replace(".webp", ".png")
-                subprocess.run(["dwebp", webp_path, "-o", png_path], check=False)
-                with open(png_path, "rb") as fh:
-                    self.image = BytesIO(fh.read())
-                os.remove(webp_path)
-                os.remove(png_path)
-            else:
-                self.image = PILImage.open(BytesIO(imageb64))
+            self.image = PILImage.open(BytesIO(b64decode(image)))
+            if self.image.format == 'WEBP':
+                # convert to png
+                png_bytes = BytesIO()
+                self.image.save(png_bytes, format='PNG')
+                png_bytes.seek(0)
+                self.image = PILImage.open(png_bytes)
+                
         except Exception as exc:
             _logger.error("Error processing image: %s", exc)
             self.image = None
-    elif not isinstance(image, ImageFile.ImageFile):
-        fname = six.text_type(image)
-        if not os.path.exists(fname):
-            self.image = None
-
 
 ImageRef.__init__ = _patched_image_ref_init
-
-
 _orig_image_handler = ImagexExtension._image
 
 def _patched_parse(self, parser):
@@ -132,7 +108,6 @@ def _patched_image(self, tag_name, arg_list, kw_dict, caller):
             resize_mode="fit_cell",
         )
         if image_ref.image:
-            image_ref.allow_insert = True
             node = self.environment.node_map.current_node
             node.set_image_ref(image_ref)
         return "image"
