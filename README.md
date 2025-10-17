@@ -10,9 +10,6 @@ Before installing this module, make sure to install the following libraries:
 
 - `pip install xlsxtpl num2words Babel`
 
-Note: If you want to use replace image, please install webp
-- `sudo apt install webp`
-
 ## Usage
 
 For usage instructions, you can refer to the following video: [Link](https://youtu.be/-mpE5AaSJhw)  
@@ -29,10 +26,16 @@ To call and write the field name, use the following format: `{{docs.field_name}}
 
 ### Useful Functions
 
-- `{{spelled_out(docs.numeric_field)}}`: Spell out numbers
-- `{{formatdate(docs.date_field)}}`: Format dates
-- `{{convert_currency(docs.monetary_field, docs.currency_id)}}`: Format monetary field
+- `{{ spelled_out(docs.numeric_field) }}`: Spell out numbers
+- `{{ formatdate(docs.date_field) }}`: Format dates
+- `{{ convert_currency(docs.monetary_field, docs.currency_id) }}`: Format monetary field
+- `{% insert_img docs.image_field %}`: Insert image in cell *image fit to cell
+- `{% insert_img_cell docs.image_field %}`: Insert image in cell *cell fit to image
+- `{% insert_img_cell docs.image_field, width=200, height=200 %}`: Insert image with custom width or height
+- `{% xv docs.date_field %}`: Non-string value for a cell to to specify a variable
+- `{% yn docs.boolean_field %}` : return a checkbox base on boolean condition
 - `{% img docs.image_field %}`: Replace dummy image with image field, *require dummy image in template
+
 
 ![Replace Image Syntax](assets/assets/replace_image.png)
 
