@@ -1,7 +1,6 @@
 import base64
 import zipfile
 from io import BytesIO
-from datetime import datetime
 
 from xlsxtpl.writerx import BookWriter
 from odoo import _, api, fields, models
