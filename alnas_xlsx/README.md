@@ -10,9 +10,6 @@ Before installing this module, make sure to install the following libraries:
 
 - `pip install xlsxtpl`
 
-Note: If you want to use replace image, please install webp
-- `sudo apt install webp`
-
 ## Usage
 
 For usage instructions, you can refer to the following video: [Link](https://youtu.be/-mpE5AaSJhw)  
