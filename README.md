@@ -15,6 +15,8 @@ Note: If you want to use replace image, please install webp
 
 ## Usage
 
+For security reasons, creating or editing XLSX Report Configurations is restricted to the **Report Editor** group (System Administrators by default). Regular users can only print published reports.
+
 For usage instructions, you can refer to the following video: [Link](https://youtu.be/-mpE5AaSJhw)  
 ![Video Preview](assets/preview.gif)
 

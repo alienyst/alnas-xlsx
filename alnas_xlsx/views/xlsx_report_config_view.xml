@@ -8,9 +8,13 @@
         <field name="model">xlsx.report.config</field>
         <field name="arch" type="xml">
             <tree string="XLSX Report Configuration">
-                <field name="name" />
-                <field name="model_id" />
-                <field name="state"/>
+                <header>
+                    <button string="Publish" name="action_publish" type="object" class="oe_highlight btn-primary"/>
+                    <button string="Unpublish" name="action_unpublish" type="object" class="oe_highlight btn-secondary"/>
+                </header>
+                <field name="name" readonly="state != 'draft'"/>
+                <field name="model_id" readonly="state != 'draft'"/>
+                <field name="state" readonly="state != 'draft'" decoration-info="state == 'draft'" decoration-success="state == 'published'"/>
             </tree>
         </field>
     </record>
@@ -28,13 +32,15 @@
                 <sheet>
                     <group>
                         <field name="name" readonly="state != 'draft'"/>
-                        <field name="report_name" readonly="state != 'draft'" placeholder="example: sale.order.xlsx"/>
+                        <field name="report_name" readonly="state != 'draft'" placeholder="report.code.example"/>
                         <field name="model_id" options="{'no_quick_create':True,'no_create_edit':True, 'no_create':True}"  readonly="state != 'draft'"/>
+                        <field name="model_name" invisible="1"/>
                         <field name="field_id" options="{'no_quick_create':True,'no_create_edit':True, 'no_create':True}"  readonly="state != 'draft'"/>
+                        <field name="domain" widget="domain" options="{'model': 'model_name', 'in_dialog': true, 'foldable': true}" readonly="state != 'draft'" placeholder="[]"/>
                         <field name="prefix"  readonly="state != 'draft'"/>
                         <field name="report_xlsx_template" filename="report_xlsx_template_filename" readonly="state != 'draft'"/>
                         <field name="report_xlsx_template_filename" invisible="1" readonly="state != 'draft'"/>
-                        <field name="print_report_name"/>
+                        <field name="print_report_name" readonly="state != 'draft'"/>
                     </group>
                 </sheet>
                 <div class="oe_chatter">

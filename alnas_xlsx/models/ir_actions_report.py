@@ -1,8 +1,6 @@
 import base64
 import zipfile
 from io import BytesIO
-from datetime import datetime
-
 from xlsxtpl.writerx import BookWriter
 from odoo import _, api, fields, models
 from odoo.tools.safe_eval import safe_eval, time
@@ -22,72 +20,89 @@ class IrActionsReport(models.Model):
     report_xlsx_jinja_template = fields.Binary(string="Report XLSX Jinja Template")
     report_xlsx_jinja_template_name = fields.Char(string="Report XLSX Jinja Template Name")
 
-    @api.constrains("report_type")
+    @api.constrains(
+        "report_type", "report_xlsx_jinja_template", "report_xlsx_jinja_template_name"
+    )
     def _check_report_type(self):
         for rec in self:
-            if (
-                rec.report_type == "xlsx-jinja"
-                and not rec.report_xlsx_jinja_template
-                and not rec.report_xlsx_jinja_template_name.endswith(".xlsx")
+            if rec.report_type == "xlsx-jinja" and (
+                not rec.report_xlsx_jinja_template
+                or not (rec.report_xlsx_jinja_template_name or "").lower().endswith(".xlsx")
             ):
-                raise ValidationError(_("Please upload an XLSX Jinja template."))
+                raise ValidationError(_("Please upload a valid .xlsx template."))
             
     def _get_rendering_context_xlsxtpl(self):
-        context = {
+        context = self.env["mail.render.mixin"]._render_eval_context()
+        context.update({
             "spelled_out": misc_tools.spelled_out,
             "formatdate": misc_tools.formatdate,
             "convert_currency": misc_tools.convert_currency,
             "company": self.env.company,
             "lang": self._context.get("lang", "id_ID"),
-            "sysdate": fields.Datetime.now()
-        }
+            "sysdate": fields.Datetime.now(),
+        })
         return context
 
     def _render_jinja_xlsx(self, report_ref, docids, data):
-        report = self._get_report_from_name(report_ref)
-        file_template = report.report_xlsx_jinja_template
+        report = self._get_report(report_ref)
+        return report._render_xlsx_records(docids, data)
 
-        if not file_template:
+    def _render_xlsx_records(self, docids, data=None):
+        self.ensure_one()
+        if not self.report_xlsx_jinja_template:
             raise MissingError(_("No XLSX Jinja template found."))
 
-        template = BytesIO(base64.b64decode(file_template))
-        doc_obj = self.env[report.model].browse(docids)
-        context = self._get_rendering_context_xlsxtpl()
-        return self._render_xlsx_jinja_mode(template, doc_obj, data, context, report_name=report.print_report_name)
+        template = BytesIO(base64.b64decode(self.report_xlsx_jinja_template))
+        doc_obj = self.env[self.model].browse(docids).with_context(bin_size=False)
+        return self._render_xlsx_jinja_mode(
+            template,
+            doc_obj,
+            data or {},
+            self._get_rendering_context_xlsxtpl(),
+            report_name=self.print_report_name,
+        )
     
     def _render_xlsx_jinja_mode(self, template_path, doc_obj, data, context, report_name="report"):
+        template = template_path.getvalue()
         xlsx_files = []
-        writer = BookWriter(template_path)
-        writer.set_jinja_globals(dir=dir, getattr=getattr)
-        zip_buffer = BytesIO()
-        sheet_states = writer.sheet_resource_map.sheet_state_list
-        if not sheet_states:
-            raise MissingError(_("The XLSX template does not contain any worksheet."))
-        
-        for idx, obj in enumerate(doc_obj):
+
+        for obj in doc_obj:
+            writer = BookWriter(BytesIO(template))
+            writer.set_jinja_globals(dir=dir, getattr=getattr)
+            sheet_states = writer.sheet_resource_map.sheet_state_list
+            if not sheet_states:
+                raise MissingError(_("The XLSX template does not contain any worksheet."))
+
             for sheet_state in sheet_states:
-                payload = {
+                writer.render_sheet({
                     **context,
                     "docs": obj,
                     "data": data,
                     "sheet_name": sheet_state.name,
                     "tpl_idx": sheet_state.index,
-                }
-                writer.render_sheet(payload)
+                })
 
-            temp = BytesIO()
-            writer.save(temp)
-            temp.seek(0)
-            xlsx_files.append(temp.read())
+            output = BytesIO()
+            writer.save(output)
+            xlsx_files.append(output.getvalue())
 
         if len(xlsx_files) == 1:
             return xlsx_files[0], "xlsx"
-        else:
-            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                for idx, xlsx_file in enumerate(xlsx_files):
-                    name = safe_eval(report_name, {"object": doc_obj[idx], "time": time})
-                    filename = "%s.%s" % (name, "xlsx")
-                    zip_file.writestr(filename, xlsx_file)
 
-            zip_buffer.seek(0)
-            return zip_buffer.read(), "zip"
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for idx, (obj, xlsx_file) in enumerate(zip(doc_obj, xlsx_files), start=1):
+                name = (
+                    safe_eval(report_name, {"object": obj, "time": time})
+                    if report_name
+                    else False
+                )
+                safe_filename = str(name or f"report_{idx}").replace("/", "_").replace("\\", "_")
+                filename = f"{safe_filename}.xlsx"
+                suffix = 2
+                while filename in zip_file.namelist():
+                    filename = f"{safe_filename}_{suffix}.xlsx"
+                    suffix += 1
+                zip_file.writestr(filename, xlsx_file)
+
+        return zip_buffer.getvalue(), "zip"
