@@ -6,11 +6,12 @@
     'website': "https://github.com/alienyst",
     'images': ["static/description/banner.png"],
     'category': 'Technical',
-    'version': '18.0.0.3',
+    'version': '18.0.1.0.0',
     'application': True,
     'installable': True,
     'depends': ['base', 'mail'],
     'data': [
+        'security/security.xml',
         'security/ir.model.access.csv',
         'views/xlsx_report_config_view.xml',
         'views/ir_action_report_view.xml',

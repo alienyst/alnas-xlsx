@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-alnas_xlsx.access_xlsx_report_config,access_xlsx_report_config,alnas_xlsx.model_xlsx_report_config,base.group_user,1,1,1,1
+access_xlsx_report_config_report_editors,access_xlsx_report_config_report_editors,alnas_xlsx.model_xlsx_report_config,group_xlsx_report_editors,1,1,1,1
+access_ir_model_fields_xlsx_report_editors,access_ir_model_fields_xlsx_report_editors,base.model_ir_model_fields,group_xlsx_report_editors,1,0,0,0
+access_ir_model_xlsx_report_editors,access_ir_model_xlsx_report_editors,base.model_ir_model,group_xlsx_report_editors,1,0,0,0
