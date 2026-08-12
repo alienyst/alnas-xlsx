@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -22,6 +22,7 @@ class XlsxReportConfig(models.Model):
     report_name = fields.Char(
         string="Report Code",
         required=True,
+        copy=False,
         help="Report Unique Code use for Technical Purpose"
     )
     model_id = fields.Many2one(
@@ -32,6 +33,7 @@ class XlsxReportConfig(models.Model):
         readonly=True, 
         help="Model to which this report will be attached"
     )
+    model_name = fields.Char(compute="_compute_model_name", store=False)
     field_id = fields.Many2one(
         'ir.model.fields', 
         string='Field Name', 
@@ -73,11 +75,44 @@ class XlsxReportConfig(models.Model):
         copy=False
     )    
     print_report_name = fields.Char(
-        string='Print Report Name', 
-        compute='_compute_print_report_name', 
-        help="Filename generated for the report"
+        string='Print Report Name',
+        compute='_compute_print_report_name',
+        store=True,
+        readonly=False,
+        precompute=True,
+        help="Filename expression for the generated report. "
+        "Auto-filled from model/field/prefix; can be overridden manually."
     )
-            
+    domain = fields.Char(
+        string="Filter Domain",
+        help="If set, the report action will only appear on records that match this domain."
+    )
+
+    def copy_data(self, default=None):
+        """Keep unique labels and report code when duplicating."""
+        default = dict(default or {})
+        vals_list = super().copy_data(default=default)
+        for record, vals in zip(self, vals_list):
+            if "name" not in default:
+                vals["name"] = _("%s (copy)", record.name)
+            if "report_name" not in default:
+                vals["report_name"] = _("%s (copy)", record.report_name)
+        return vals_list
+
+    @api.onchange("model_id")
+    def _onchange_model_id(self):
+        if not self.model_id:
+            self.field_id = False
+            return
+        if self.field_id and self.field_id.model_id == self.model_id:
+            return
+        self.field_id = self._get_default_field_id(self.model_id)
+
+    @api.depends("model_id")
+    def _compute_model_name(self):
+        for record in self:
+            record.model_name = record.model_id.model or ""
+
     @api.depends('model_id', 'field_id', 'prefix')
     def _compute_print_report_name(self):
         for rec in self:
@@ -89,8 +124,8 @@ class XlsxReportConfig(models.Model):
     @api.constrains('report_xlsx_template_filename')
     def _check_report_xlsx_template_filename(self):
         for rec in self:
-            if not rec.report_xlsx_template_filename.endswith('.xlsx'):
-                raise UserError('Please upload a xlsx template.')
+            if not (rec.report_xlsx_template_filename or "").lower().endswith('.xlsx'):
+                raise UserError('Please upload an XLSX template.')
     
     def _action_publish(self):
         for record in self:
@@ -105,8 +140,6 @@ class XlsxReportConfig(models.Model):
                 action_report.create_action()
                 record.action_report_id = action_report
                 record.state = 'published'
-            else:
-                raise UserError('Report already published')
         return True
     
     def action_publish(self):
@@ -116,10 +149,8 @@ class XlsxReportConfig(models.Model):
     def _action_unpublish(self):
         for record in self:
             if record.state == 'published':
-                record.action_report_id.unlink_action()
+                record.action_report_id.sudo().unlink_action()
                 record.state = 'draft'
-            else:
-                raise UserError('Report already unpublished')
         return True
     
     def action_unpublish(self):
@@ -135,6 +166,7 @@ class XlsxReportConfig(models.Model):
             "report_xlsx_jinja_template_name": self.report_xlsx_template_filename,
             "report_name": self.report_name,
             "print_report_name": self.print_report_name,
+            "domain": self.domain or False,
         }
 
     @api.ondelete(at_uninstall=False)
@@ -150,3 +182,20 @@ class XlsxReportConfig(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
+
+    def _get_default_field_id(self, model_id):
+        """Prefer display_name, then model rec_name, then name."""
+        Field = self.env["ir.model.fields"]
+        if not model_id:
+            return Field
+        domain = [("model_id", "=", model_id.id), ("ttype", "=", "char")]
+        field = Field.search(domain + [("name", "=", "display_name")], limit=1)
+        if field:
+            return field
+        if model_id.model in self.env:
+            rec_name = self.env[model_id.model]._rec_name
+            if rec_name:
+                field = Field.search(domain + [("name", "=", rec_name)], limit=1)
+                if field:
+                    return field
+        return Field.search(domain + [("name", "=", "name")], limit=1)
