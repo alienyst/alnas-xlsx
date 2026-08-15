@@ -3,6 +3,24 @@ from num2words import num2words
 from babel.dates import format_date
 from babel.numbers import format_currency
 
+
+def ensure_webp_support():
+    """Force-register Pillow's WebP plugin so Image.open works on BytesIO WebP data."""
+    try:
+        from PIL import Image, WebPImagePlugin
+        Image.register_open(
+            WebPImagePlugin.WebPImageFile.format,
+            WebPImagePlugin.WebPImageFile,
+            WebPImagePlugin._accept,
+        )
+        Image.register_extension(WebPImagePlugin.WebPImageFile.format, ".webp")
+        Image.register_mime(WebPImagePlugin.WebPImageFile.format, "image/webp")
+    except Exception:
+        pass
+
+
+ensure_webp_support()
+
 # Formatting Function
 def formatdate(date_required=datetime.today(), format="full", lang="id_ID", **kwargs):
     return format_date(date_required, format=format, locale=lang, **kwargs)
