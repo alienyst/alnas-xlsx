@@ -70,9 +70,9 @@ class IrActionsReport(models.Model):
         if mode == "pdf":
             return self._render_xlsx_to_pdf_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
         elif mode == "zip":
-            return self._render_zip_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
+            return self._render_xlsx_zip_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
         else:
-            return self._render_single_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
+            return self._render_xlsx_single_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
 
     def _render_single_workbook(self, template_bytes, obj, data, context):
         writer = BookWriter(BytesIO(template_bytes))
@@ -94,7 +94,7 @@ class IrActionsReport(models.Model):
         writer.save(output)
         return output.getvalue()
 
-    def _render_single_mode(self, template_path, doc_obj, data, context, report_name="report"):
+    def _render_xlsx_single_mode(self, template_path, doc_obj, data, context, report_name="report"):
         template_bytes = template_path.getvalue()
         xlsx_files = [self._render_single_workbook(template_bytes, obj, data, context) for obj in doc_obj]
 
@@ -103,7 +103,7 @@ class IrActionsReport(models.Model):
         else:
             return self._create_zip_archive(xlsx_files, doc_obj, report_name, ext="xlsx")
 
-    def _render_zip_mode(self, template_path, doc_obj, data, context, report_name="report"):
+    def _render_xlsx_zip_mode(self, template_path, doc_obj, data, context, report_name="report"):
         template_bytes = template_path.getvalue()
         xlsx_files = [self._render_single_workbook(template_bytes, obj, data, context) for obj in doc_obj]
         return self._create_zip_archive(xlsx_files, doc_obj, report_name, ext="xlsx")
