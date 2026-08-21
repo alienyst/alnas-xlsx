@@ -19,8 +19,7 @@ class XlsxReportController(ReportController):
     @route()
     def report_routes(self, reportname, docids=None, converter=None, **data):
         if converter == "xlsx-jinja":
-            
-            report = request.env["ir.actions.report"]._get_report_from_name(reportname)
+            report = request.env["ir.actions.report"]._get_report(reportname)
             context = dict(request.env.context)
             
             if docids:
@@ -75,9 +74,7 @@ class XlsxReportController(ReportController):
                         reportname, docids=docids, converter="xlsx-jinja", context=context, **data
                     )
 
-                report = request.env["ir.actions.report"]._get_report_from_name(
-                    reportname
-                )
+                report = request.env["ir.actions.report"]._get_report(reportname)
 
                 filename = "%s.%s" % (reportname, "zip")
                 ext = "pdf" if getattr(report, "xlsx_merge_mode", False) == "pdf" else "xlsx"

@@ -2,7 +2,7 @@
 <odoo>
     <data noupdate="0">
         <record id="default_libreoffice_path" model="ir.config_parameter">
-            <field name="key">libreoffice.path</field> 
+            <field name="key">alnas_xlsx.default_libreoffice_path</field> 
             <field name="value">/usr/bin/libreoffice</field> 
         </record>
     </data>
