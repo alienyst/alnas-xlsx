@@ -1,7 +1,7 @@
 import base64
 import zipfile
 from io import BytesIO
-from xlsxtpl.writerx import BookWriter
+from xlsxjinja import BookWriter
 from odoo import _, api, fields, models
 from odoo.tools.safe_eval import safe_eval, time
 from odoo.exceptions import ValidationError, MissingError
@@ -31,7 +31,7 @@ class IrActionsReport(models.Model):
             ):
                 raise ValidationError(_("Please upload a valid .xlsx template."))
             
-    def _get_rendering_context_xlsxtpl(self):
+    def _get_rendering_context_xlsx(self):
         context = self.env["mail.render.mixin"]._render_eval_context()
         context.update({
             "spelled_out": misc_tools.spelled_out,
@@ -58,7 +58,7 @@ class IrActionsReport(models.Model):
             template,
             doc_obj,
             data or {},
-            self._get_rendering_context_xlsxtpl(),
+            self._get_rendering_context_xlsx(),
             report_name=self.print_report_name,
         )
     

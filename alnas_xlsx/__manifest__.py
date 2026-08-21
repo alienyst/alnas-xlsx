@@ -6,7 +6,7 @@
     'website': "https://github.com/alienyst",
     'images': ["static/description/banner.png"],
     'category': 'Technical',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'application': True,
     'installable': True,
     'depends': ['base', 'mail'],
@@ -23,7 +23,7 @@
     },
     'license': 'LGPL-3',
     'external_dependencies': {
-        'python': ['xlsxtpl']
+        'python': ['xlsxjinja']
     }
     
 }
