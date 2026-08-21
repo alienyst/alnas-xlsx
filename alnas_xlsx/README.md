@@ -134,7 +134,7 @@ Ensure LibreOffice is installed:
 - **Linux:** `sudo apt install libreoffice` (or `/usr/bin/libreoffice`)
 - **Windows:** `C:\Program Files\LibreOffice\program\soffice.exe`
 
-Set the executable path in **Settings** => **Technical** => **Parameters** => **System Parameters** under the key `libreoffice.path` (defaults to `/usr/bin/libreoffice`).
+Set the executable path in **Settings** => **Technical** => **Parameters** => **System Parameters** under the key `alnas_xlsx.default_libreoffice_path` (defaults to `/usr/bin/libreoffice`).
 
 ## Feedback
 

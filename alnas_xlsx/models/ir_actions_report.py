@@ -32,10 +32,7 @@ class IrActionsReport(models.Model):
         default="single",
     )
 
-    @api.constrains(
-
-        "report_type", "report_xlsx_jinja_template", "report_xlsx_jinja_template_name"
-    )
+    @api.constrains("report_type", "report_xlsx_jinja_template", "report_xlsx_jinja_template_name")
     def _check_report_type(self):
         for rec in self:
             if rec.report_type == "xlsx-jinja" and (
@@ -60,79 +57,68 @@ class IrActionsReport(models.Model):
         report = self._get_report(report_ref)
         return report._render_xlsx_records(docids, data)
 
-    def _render_xlsx_records(self, docids, data=None):
+    def _render_xlsx_records(self, docids, data=None, merge_mode=None):
         self.ensure_one()
         if not self.report_xlsx_jinja_template:
             raise MissingError(_("No XLSX Jinja template found."))
 
         template = BytesIO(base64.b64decode(self.report_xlsx_jinja_template))
         doc_obj = self.env[self.model].browse(docids).with_context(bin_size=False)
-        return self._render_xlsx_jinja_mode(
-            template,
-            doc_obj,
-            data or {},
-            self._get_rendering_context_xlsx(),
-            report_name=self.print_report_name,
-            merge_mode=self.xlsx_merge_mode,
-        )
-    
-    def _render_xlsx_jinja_mode(
-        self, template_path, doc_obj, data, context, report_name="report", merge_mode="single"
-    ):
-        template = template_path.getvalue()
-        xlsx_files = []
+        context = self._get_rendering_context_xlsx()
+        mode = merge_mode or self.xlsx_merge_mode
 
-        for obj in doc_obj:
-            writer = BookWriter(BytesIO(template))
-            writer.set_jinja_globals(dir=dir, getattr=getattr)
-            sheet_states = writer.sheet_resource_map.sheet_state_list
-            if not sheet_states:
-                raise MissingError(_("The XLSX template does not contain any worksheet."))
-
-            for sheet_state in sheet_states:
-                writer.render_sheet({
-                    **context,
-                    "docs": obj,
-                    "data": data,
-                    "sheet_name": sheet_state.name,
-                    "tpl_idx": sheet_state.index,
-                })
-
-            output = BytesIO()
-            writer.save(output)
-            xlsx_files.append(output.getvalue())
-
-        mode = merge_mode or "single"
         if mode == "pdf":
-            return self._render_xlsx_to_pdf_mode(xlsx_files, doc_obj, report_name)
-        elif mode == "zip" or len(xlsx_files) > 1:
-            zip_buffer = BytesIO()
-            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                for idx, (obj, xlsx_file) in enumerate(zip(doc_obj, xlsx_files), start=1):
-                    name = (
-                        safe_eval(report_name, {"object": obj, "time": time})
-                        if report_name
-                        else False
-                    )
-                    safe_filename = str(name or f"report_{idx}").replace("/", "_").replace("\\", "_")
-                    filename = f"{safe_filename}.xlsx"
-                    suffix = 2
-                    while filename in zip_file.namelist():
-                        filename = f"{safe_filename}_{suffix}.xlsx"
-                        suffix += 1
-                    zip_file.writestr(filename, xlsx_file)
-            return zip_buffer.getvalue(), "zip"
+            return self._render_xlsx_to_pdf_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
+        elif mode == "zip":
+            return self._render_zip_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
         else:
-            return xlsx_files[0] if xlsx_files else b"", "xlsx"
+            return self._render_single_mode(template, doc_obj, data or {}, context, report_name=self.print_report_name)
 
-    def _render_xlsx_to_pdf_mode(self, xlsx_files, doc_obj, report_name="report"):
+    def _render_single_workbook(self, template_bytes, obj, data, context):
+        writer = BookWriter(BytesIO(template_bytes))
+        writer.set_jinja_globals(dir=dir, getattr=getattr)
+        sheet_states = writer.sheet_resource_map.sheet_state_list
+        if not sheet_states:
+            raise MissingError(_("The XLSX template does not contain any worksheet."))
+
+        for sheet_state in sheet_states:
+            writer.render_sheet({
+                **context,
+                "docs": obj,
+                "data": data,
+                "sheet_name": sheet_state.name,
+                "tpl_idx": sheet_state.index,
+            })
+
+        output = BytesIO()
+        writer.save(output)
+        return output.getvalue()
+
+    def _render_single_mode(self, template_path, doc_obj, data, context, report_name="report"):
+        template_bytes = template_path.getvalue()
+        xlsx_files = [self._render_single_workbook(template_bytes, obj, data, context) for obj in doc_obj]
+
+        if len(xlsx_files) == 1:
+            return xlsx_files[0], "xlsx"
+        else:
+            return self._create_zip_archive(xlsx_files, doc_obj, report_name, ext="xlsx")
+
+    def _render_zip_mode(self, template_path, doc_obj, data, context, report_name="report"):
+        template_bytes = template_path.getvalue()
+        xlsx_files = [self._render_single_workbook(template_bytes, obj, data, context) for obj in doc_obj]
+        return self._create_zip_archive(xlsx_files, doc_obj, report_name, ext="xlsx")
+
+    def _render_xlsx_to_pdf_mode(self, template_path, doc_obj, data, context, report_name="report"):
+        template_bytes = template_path.getvalue()
+        xlsx_files = [self._render_single_workbook(template_bytes, obj, data, context) for obj in doc_obj]
+
         if not xlsx_files:
             return b"", "pdf"
 
         temp_dir = tempfile.mkdtemp()
         try:
             pdf_files = []
-            for idx, (obj, xlsx_data) in enumerate(zip(doc_obj, xlsx_files), start=1):
+            for idx, xlsx_data in enumerate(xlsx_files, start=1):
                 xlsx_path = os.path.join(temp_dir, f"document_{idx}.xlsx")
                 with open(xlsx_path, "wb") as f:
                     f.write(xlsx_data)
@@ -147,24 +133,27 @@ class IrActionsReport(models.Model):
             if len(pdf_files) == 1:
                 return pdf_files[0], "pdf"
             else:
-                zip_buffer = BytesIO()
-                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                    for idx, (obj, pdf_content) in enumerate(zip(doc_obj, pdf_files), start=1):
-                        name = (
-                            safe_eval(report_name, {"object": obj, "time": time})
-                            if report_name
-                            else False
-                        )
-                        safe_filename = str(name or f"report_{idx}").replace("/", "_").replace("\\", "_")
-                        filename = f"{safe_filename}.pdf"
-                        suffix = 2
-                        while filename in zip_file.namelist():
-                            filename = f"{safe_filename}_{suffix}.pdf"
-                            suffix += 1
-                        zip_file.writestr(filename, pdf_content)
-                return zip_buffer.getvalue(), "zip"
+                return self._create_zip_archive(pdf_files, doc_obj, report_name, ext="pdf")
         finally:
             shutil.rmtree(temp_dir)
+
+    def _create_zip_archive(self, file_contents, doc_obj, report_name, ext="xlsx"):
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for idx, (obj, content) in enumerate(zip(doc_obj, file_contents), start=1):
+                name = (
+                    safe_eval(report_name, {"object": obj, "time": time})
+                    if report_name
+                    else False
+                )
+                safe_filename = str(name or f"report_{idx}").replace("/", "_").replace("\\", "_")
+                filename = f"{safe_filename}.{ext}"
+                suffix = 2
+                while filename in zip_file.namelist():
+                    filename = f"{safe_filename}_{suffix}.{ext}"
+                    suffix += 1
+                zip_file.writestr(filename, content)
+        return zip_buffer.getvalue(), "zip"
 
     def convert_file_to_pdf(self, file_path, output_dir):
         librepath = self._get_libreoffice_path()
@@ -207,15 +196,11 @@ class IrActionsReport(models.Model):
         return pdf_file_path if os.path.exists(pdf_file_path) else None
 
     def _get_libreoffice_path(self):
-        param = self.env["ir.config_parameter"].sudo().get_param("libreoffice.path")
-        if not param:
-            libreoffice_record = self.env.ref("alnas_xlsx.default_libreoffice_path", raise_if_not_found=False)
-            param = libreoffice_record.value if libreoffice_record else None
-        if not param:
-            param = shutil.which("libreoffice") or shutil.which("soffice")
-        if not param:
+        libreoffice = self.env.ref("alnas_xlsx.default_libreoffice_path", raise_if_not_found=False)
+        if not libreoffice or not libreoffice.value:
             raise ValidationError(
-                _("LibreOffice path is not set.\nPlease configure 'libreoffice.path' in Settings => Technical => Parameters => System Parameters.")
+                _("LibreOffice path does not exist.\nPlease set in Settings => Technical => Parameters => System Parameters => alnas_xlsx.default_libreoffice_path")
             )
-        return param
+        return libreoffice.value
+
 
