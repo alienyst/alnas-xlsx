@@ -119,6 +119,23 @@ Standard Jinja `{% if %}` / `{% else %}` / `{% endif %}`, hoisted the same way a
 
 Note: The functions will be updated as needed.
 
+### XLSX Output Modes (`xlsx_merge_mode`)
+
+You can choose how the report should be generated:
+1. **Single / Auto (`single` - Default):** Generates a `.xlsx` file (or a `.zip` archive if printing multiple records at once).
+2. **Zip (`zip`):** Always generates a `.zip` containing individual `.xlsx` files per record.
+3. **PDF (`pdf`):** Automatically converts the rendered XLSX to a `.pdf` file using LibreOffice.
+   - **Multi-sheet support:** All visible worksheets in the template are automatically included in order (Sheet 1 -> Page 1, Sheet 2 -> Page 2, etc.).
+   - **Excluding sheets:** Hide any worksheet in Excel (*Right-click Sheet -> Hide*) that you don't want to appear in the PDF.
+   - **Page Setup:** Use Excel's *Page Layout -> Fit to 1 Page Wide* to prevent wide tables from splitting into multiple pages horizontally.
+
+#### PDF Mode Setup (LibreOffice)
+Ensure LibreOffice is installed:
+- **Linux:** `sudo apt install libreoffice` (or `/usr/bin/libreoffice`)
+- **Windows:** `C:\Program Files\LibreOffice\program\soffice.exe`
+
+Set the executable path in **Settings** => **Technical** => **Parameters** => **System Parameters** under the key `libreoffice.path` (defaults to `/usr/bin/libreoffice`).
+
 ## Feedback
 
 We welcome any feedback and suggestions, especially for improving this module. Thank you!

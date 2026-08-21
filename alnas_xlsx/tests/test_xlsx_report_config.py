@@ -39,6 +39,25 @@ class TestXlsxReportConfig(TransactionCase):
         config._action_unpublish()
         config._action_unpublish()
 
+    def test_xlsx_merge_mode_selection(self):
+        model = self.env["ir.model"]._get("res.partner")
+        field = self.env["ir.model.fields"].search(
+            [("model_id", "=", model.id), ("name", "=", "name")], limit=1
+        )
+        config = self.env["xlsx.report.config"].create(
+            {
+                "name": "Partner PDF Report",
+                "report_name": "partner_pdf_report",
+                "model_id": model.id,
+                "field_id": field.id,
+                "report_xlsx_template": b64encode(b"xlsx"),
+                "report_xlsx_template_filename": "partner.xlsx",
+                "xlsx_merge_mode": "pdf",
+            }
+        )
+        config._action_publish()
+        self.assertEqual(config.action_report_id.xlsx_merge_mode, "pdf")
+
     def test_multi_record_render_isolated_and_zip_names_safe(self):
         template = BytesIO()
         workbook = Workbook()
