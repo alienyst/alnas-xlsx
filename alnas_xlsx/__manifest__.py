@@ -13,6 +13,7 @@
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'data/ir_config_data.xml',
         'views/xlsx_report_config_view.xml',
         'views/ir_action_report_view.xml',
     ],

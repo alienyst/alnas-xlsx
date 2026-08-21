@@ -73,6 +73,17 @@ class XlsxReportConfig(models.Model):
         readonly=True, 
         copy=False
     )    
+    xlsx_merge_mode = fields.Selection(
+        [("single", "Single / Auto"), ("zip", "Zip"), ("pdf", "PDF")],
+        string="XLSX Merge Mode",
+        default="single",
+        required=True,
+        readonly=True,
+        help="Mode to be used for generating the report:\n \
+            - 'Single / Auto': Returns XLSX directly (or ZIP if multiple records).\n \
+            - 'Zip': Always generates a ZIP file containing multiple XLSX files.\n \
+            - 'PDF': Converts the rendered XLSX (including all sheets) to PDF using LibreOffice.",
+    )
     print_report_name = fields.Char(
         string='Print Report Name',
         compute='_compute_print_report_name',
@@ -164,6 +175,7 @@ class XlsxReportConfig(models.Model):
             "report_xlsx_jinja_template": self.report_xlsx_template,
             "report_xlsx_jinja_template_name": self.report_xlsx_template_filename,
             "report_name": self.report_name,
+            "xlsx_merge_mode": self.xlsx_merge_mode,
             "print_report_name": self.print_report_name,
             "domain": self.domain or False,
         }

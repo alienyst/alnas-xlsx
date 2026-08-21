@@ -40,6 +40,7 @@
                         <field name="prefix"  readonly="state != 'draft'"/>
                         <field name="report_xlsx_template" filename="report_xlsx_template_filename" readonly="state != 'draft'"/>
                         <field name="report_xlsx_template_filename" invisible="1" readonly="state != 'draft'"/>
+                        <field name="xlsx_merge_mode" readonly="state != 'draft'"/>
                         <field name="print_report_name" readonly="state != 'draft'"/>
                     </group>
                 </sheet>
