@@ -36,6 +36,8 @@ class XlsxReportController(ReportController):
             
             if file_type == "zip":
                 content_type = "application/zip"
+            elif file_type == "pdf":
+                content_type = "application/pdf"
                 
             httpheaders = [
                 ('Content-Type', content_type),
@@ -78,6 +80,7 @@ class XlsxReportController(ReportController):
                 )
 
                 filename = "%s.%s" % (reportname, "zip")
+                ext = "pdf" if getattr(report, "xlsx_merge_mode", False) == "pdf" else "xlsx"
                 
                 if docids:
                     ids = [int(x) for x in docids.split(",")]
@@ -86,7 +89,9 @@ class XlsxReportController(ReportController):
                         report_name = safe_eval(
                             report.print_report_name, {"object": obj, "time": time}
                         )
-                        filename = "%s.%s" % (report_name, "xlsx")
+                        filename = "%s.%s" % (report_name, ext)
+                    elif not len(obj) > 1:
+                        filename = "%s.%s" % (reportname, ext)
                 if not response.headers.get("Content-Disposition"):
                     response.headers.add(
                         "Content-Disposition", content_disposition(filename)
